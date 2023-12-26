@@ -24,8 +24,14 @@ const registerUser=async(req,res)=>{
             new ApiError(409, "User with email or username already exists")
         )
     }
-
     //console.log(req.files)
+
+    if(!req.files?.avatar)
+    {
+        return res.status(400).json(
+            new ApiError(400, "Avatar is required")
+        )  
+    }
 
     const avatar = await uploadOnCloudinary(req.files?.avatar[0]?.path);
     //console.log(avatar.url)
