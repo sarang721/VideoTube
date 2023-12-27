@@ -40,8 +40,7 @@ const registerUser=async(req,res)=>{
     {
         coverImage = await uploadOnCloudinary(req.files?.coverImage[0]?.path);
     }
-
-
+    
     const user = await User.create({
         fullName,
         avatar: avatar.url,
