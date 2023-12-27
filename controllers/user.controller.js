@@ -40,7 +40,7 @@ const registerUser=async(req,res)=>{
     {
         coverImage = await uploadOnCloudinary(req.files?.coverImage[0]?.path);
     }
-    
+
     const user = await User.create({
         fullName,
         avatar: avatar.url,
@@ -50,8 +50,18 @@ const registerUser=async(req,res)=>{
         userName: userName.toLowerCase()
     })
 
+    const createdUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    )
+
+    if (!createdUser) {
+        return res.status(500).json(
+            new ApiError(500, "Something went wrong while registering the user")
+        )
+    }
+
     return res.status(201).json(
-        new ApiResponse(201, {}, "User registered Successfully")
+        new ApiResponse(201, createdUser, "User registered Successfully")
     )
 }
 
