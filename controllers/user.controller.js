@@ -2,6 +2,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt, { decode } from "jsonwebtoken";
 
 const registerUser=async(req,res)=>{
 
@@ -168,4 +169,83 @@ const logoutUser = async(req,res)=>{
     .json(new ApiResponse(200, {}, "User logged Out"))
 }
 
-export {registerUser, loginUser, logoutUser}
+
+const refreshAccessToken = async(req,res)=>{
+    const incomingToken = req.cookies.refreshToken || req.body.refreshToken;
+
+    if(!incomingToken)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Unauthorized request")
+        )
+    }
+
+    let decodedToken=null;
+    
+   try{
+    
+        decodedToken = jwt.verify(incomingToken,process.env.REFRESH_TOKEN_SECRET);
+   }
+   catch(e)
+   {
+        return res.status(401).json(
+        new ApiError(401,"Invalid refresh token")
+        )
+   }
+
+    try{
+
+    const user = await User.findById(decodedToken._id);
+
+    console.log(user)
+
+    if(!user)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Invalid refresh token")
+        )
+    }
+
+    const newAccessToken = user.generateAccessToken();
+    const newRefreshToken = user.generateRefreshToken();
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    user.password = undefined;
+
+    return res
+    .status(200)
+    .cookie("accessToken", newAccessToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
+    .json(
+        new ApiResponse(200,{
+            refreshToken: newRefreshToken,
+            accessToken: newAccessToken
+        },"Access token refreshed")
+    )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal server error")
+        )
+    }
+
+
+
+}
+
+
+export {registerUser, 
+    loginUser,
+    logoutUser,
+    refreshAccessToken
+
+}
