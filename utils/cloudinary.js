@@ -26,7 +26,6 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-
 const deleteOldAvatarFromCloudinary = async(url)=>{
 
     cloudinary.config({ 
