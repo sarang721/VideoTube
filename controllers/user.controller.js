@@ -181,7 +181,7 @@ const refreshAccessToken = async(req,res)=>{
     }
 
     let decodedToken=null;
-    
+
    try{
     
         decodedToken = jwt.verify(incomingToken,process.env.REFRESH_TOKEN_SECRET);
@@ -242,10 +242,61 @@ const refreshAccessToken = async(req,res)=>{
 
 }
 
+const changeCurrentPassword = async(req,res)=>{
+        
+    const { password } = req.body;
+    const user = req.user;
+
+    if(!user)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Unauthorized access")
+        )
+    }
+
+    try{
+    
+    user.password = password;
+    await user.save({validateBeforeSave: false})    
+
+    user.password = undefined
+
+    return res.status(200).json(
+        new ApiResponse(200,user,"Password updated")
+    )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+
+}
+
+const getCurrentUser = (req,res)=>{
+
+    const user = req.user;
+    if(!user)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Unauthorized request")
+        )
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200,user,"User fetched successfully")
+    )
+
+}
+
 
 export {registerUser, 
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser
 
 }
