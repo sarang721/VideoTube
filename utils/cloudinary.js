@@ -26,7 +26,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-const deleteOldAvatarFromCloudinary = async(url)=>{
+const deleteImageFromCloudinary = async(url)=>{
 
     cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -51,6 +51,6 @@ const deleteOldAvatarFromCloudinary = async(url)=>{
 }
 
 export {uploadOnCloudinary,
-    deleteOldAvatarFromCloudinary
+    deleteImageFromCloudinary
 
 }

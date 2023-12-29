@@ -1,7 +1,7 @@
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary, deleteOldAvatarFromCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
 import jwt, { decode } from "jsonwebtoken";
 
 const registerUser=async(req,res)=>{
@@ -372,6 +372,53 @@ const updateUserAvatar = async(req,res)=>{
 
 }
 
+const updateUserCoverImage = async(req,res)=>{
+    if(!req.file)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Please select coverImage")
+        )
+    }
+
+    const coverImage = await uploadOnCloudinary(req.file?.path);
+
+    if(coverImage)
+    {  
+        try{
+
+            await deleteImageFromCloudinary(req.user?.coverImage);
+            
+            const updatedProfile = await User.findByIdAndUpdate(req.user._id,
+            {
+                $set:{
+                    coverImage: coverImage?.url
+                }
+            },
+            {
+                new: true
+            }).select("-password");
+
+            return res.status(200).json(
+                new ApiResponse(200,updatedProfile,"CoverImage updated")
+            )
+
+        }
+        catch(e)
+        {
+            return res.status(500).json(
+                new ApiError(500,"Internal Server Error")
+            )
+        }
+
+    }
+
+    return res.status(500).json(
+        new ApiError(500,"Internal Server Error")
+    )
+
+
+}
+
 
 export {registerUser, 
     loginUser,
@@ -380,5 +427,6 @@ export {registerUser,
     changeCurrentPassword,
     getCurrentUser,
     updateAccountDetails,
-    updateUserAvatar
+    updateUserAvatar,
+    updateUserCoverImage,
 }
