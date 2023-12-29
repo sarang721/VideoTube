@@ -27,5 +27,31 @@ const uploadOnCloudinary = async (localFilePath) => {
 }
 
 
+const deleteOldAvatarFromCloudinary = async(url)=>{
 
-export {uploadOnCloudinary}
+    cloudinary.config({ 
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+        api_key: process.env.CLOUDINARY_API_KEY, 
+        api_secret: process.env.CLOUDINARY_API_SECRET 
+      });
+
+    if(url.length>0){
+
+    const pathSegments = url.split('/');
+    const publicId = pathSegments[pathSegments.length - 1].split('.')[0];
+
+    try{
+        await cloudinary.uploader.destroy(publicId);
+    }
+    catch(e)
+    {
+        console.log("Some issue occured while deleting avatar")
+    }
+}
+
+}
+
+export {uploadOnCloudinary,
+    deleteOldAvatarFromCloudinary
+
+}

@@ -1,7 +1,7 @@
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteOldAvatarFromCloudinary } from "../utils/cloudinary.js";
 import jwt, { decode } from "jsonwebtoken";
 
 const registerUser=async(req,res)=>{
@@ -291,12 +291,94 @@ const getCurrentUser = (req,res)=>{
 
 }
 
+const updateAccountDetails = async(req,res)=>{
+
+    const {userName, email} = req.body;
+
+    try{
+
+        const updatedUser = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{
+                userName: userName,
+                email: email
+            }
+        },
+        {
+            new:true
+        }
+        ).select("-password")
+
+        return res.status(200).json(
+            new ApiResponse(200,updatedUser,"User details updated")
+        )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+
+
+}
+
+const updateUserAvatar = async(req,res)=>{
+
+    if(!req.file)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Please select avatar")
+        )
+    }
+
+    const avatar = await uploadOnCloudinary(req.file?.path);
+
+    if(avatar)
+    {   
+
+        try{
+
+            await deleteOldAvatarFromCloudinary(req.user?.avatar);
+            
+            const updatedProfile = await User.findByIdAndUpdate(req.user._id,
+            {
+                $set:{
+                    avatar: avatar?.url
+                }
+            },
+            {
+                new: true
+            }).select("-password");
+
+            return res.status(200).json(
+                new ApiResponse(200,updatedProfile,"Avatar updated")
+            )
+
+        }
+        catch(e)
+        {
+            return res.status(500).json(
+                new ApiError(500,"Internal Server Error")
+            )
+        }
+
+    }
+
+    return res.status(500).json(
+        new ApiError(500,"Internal Server Error")
+    )
+
+}
+
 
 export {registerUser, 
     loginUser,
     logoutUser,
     refreshAccessToken,
     changeCurrentPassword,
-    getCurrentUser
-
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar
 }
