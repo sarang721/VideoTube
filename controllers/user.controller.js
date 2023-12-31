@@ -441,18 +441,32 @@ const getUserChannelProfile = async(req,res)=>{
         },
         {
             $lookup:{
-                from: "Subscription",
+                from: "subscriptions",
                 localField: "_id",
                 foreignField: "channel",
-                as: "subscribers"
+                as: "subscribers",
+                pipeline:[
+                    {
+                        $project:{
+                            subscriber:1
+                        }
+                    }
+                ]
             }
         },
         {
             $lookup:{
-                from: "Subscription",
+                from: "subscriptions",
                 localField: "_id",
                 foreignField: "subscriber",
-                as: "subscribedTo"
+                as: "subscribedTo",
+                pipeline:[
+                    {
+                        $project:{
+                            channel: 1
+                        }
+                    }
+                ]
             }
         },
         {
@@ -485,7 +499,8 @@ const getUserChannelProfile = async(req,res)=>{
                 avatar: 1,
                 coverImage: 1,
                 email: 1,
-                subscribers: 1
+                subscribers: 1,
+                subscribedTo:1 
 
             }
         }
@@ -499,7 +514,7 @@ const getUserChannelProfile = async(req,res)=>{
     catch(e)
     {
         return res.status(500).json(
-            new ApiResponse(500,"Internal Server Error")
+            new ApiError(500,"Internal Server Error")
         )
     }
 
