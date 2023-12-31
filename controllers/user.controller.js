@@ -1,6 +1,7 @@
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
+import { Subscription } from "../models/subscription.model.js"
 import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
 import jwt, { decode } from "jsonwebtoken";
 
@@ -430,6 +431,8 @@ const getUserChannelProfile = async(req,res)=>{
         )
     }
 
+    try{
+
     const channelData = await User.aggregate([
         {
             $match:{
@@ -439,21 +442,22 @@ const getUserChannelProfile = async(req,res)=>{
         {
             $lookup:{
                 from: "Subscription",
-                localField: '_id',
-                foreignField: 'channel',
+                localField: "_id",
+                foreignField: "channel",
                 as: "subscribers"
             }
         },
         {
             $lookup:{
-                from: 'Subscription',
-                localField: '_id',
-                foreignField: 'subscriber',
-                as: 'subscribedTo'
+                from: "Subscription",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
             }
         },
         {
             $addFields:{
+
                 subscribersCount: {
                     $size: "$subscribers"
                 },
@@ -474,21 +478,59 @@ const getUserChannelProfile = async(req,res)=>{
         {
             $project: {
                 fullName: 1,
-                username: 1,
+                userName: 1,
                 subscribersCount: 1,
                 channelSubscribedCount: 1,
                 isSubscribed: 1,
                 avatar: 1,
                 coverImage: 1,
-                email: 1
+                email: 1,
+                subscribers: 1
 
             }
         }
     ])
+
+    return res.status(200).json(
+        new ApiResponse(200,channelData,"Channel data fetched successfully")
+    )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiResponse(500,"Internal Server Error")
+        )
+    }
+
+}
+
+const subscribeToChannel = async(req,res)=>{
+
+    const { channelId } = req.body;
+
+    try{
+
+        const subscription = await Subscription.create({
+            subscriber: req.user._id,
+            channel: channelId
+        })
+
+        return res.status(200).json(
+            new ApiResponse(200,subscription,"Subscribed successfully")
+        )
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
 }
 
 
-export {registerUser, 
+export {
+    registerUser, 
     loginUser,
     logoutUser,
     refreshAccessToken,
@@ -497,4 +539,6 @@ export {registerUser,
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
+    getUserChannelProfile,
+    subscribeToChannel
 }

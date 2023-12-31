@@ -7,7 +7,9 @@ import { registerUser,
     getCurrentUser, 
     updateAccountDetails, 
     updateUserAvatar, 
-    updateUserCoverImage 
+    updateUserCoverImage,
+    subscribeToChannel,
+    getUserChannelProfile
 } 
 from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -24,5 +26,7 @@ router.route('/current-user').get(verifyJWT, getCurrentUser);
 router.route('/update-user').patch(verifyJWT, updateAccountDetails);
 router.route('/update-avatar').patch(verifyJWT, upload.single('avatar'), updateUserAvatar);
 router.route('/update-coverImage').patch(verifyJWT,upload.single('coverImage'), updateUserCoverImage)
+router.route('/channel-info/:userName').post(verifyJWT, getUserChannelProfile);
+router.route('/subscribe').post(verifyJWT, subscribeToChannel);
 
 export default router;
