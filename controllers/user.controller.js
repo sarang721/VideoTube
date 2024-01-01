@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js"
 import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 const registerUser=async(req,res)=>{
