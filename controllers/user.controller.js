@@ -615,44 +615,55 @@ const getWatchHistory = async(req,res)=>{
 
 }
 
-const testAddVideos = async(req,res)=>{
-    console.log("adding")
+const uploadVideo = async(req,res)=>{
 
-    const dummyVideos = [
-        {
-          videoFile: "sample_video_1.mp4",
-          thumbnail: "thumbnail_1.jpg",
-          title: "Sample Video 1",
-          description: "This is the first sample video",
-          duration: 120, // in seconds
-          views: 100,
-          isPublished: true,
-          owner: req.user._id // You can replace this with a valid ObjectId of a user
-        },
-        {
-          videoFile: "sample_video_2.mp4",
-          thumbnail: "thumbnail_2.jpg",
-          title: "Sample Video 2",
-          description: "This is the second sample video",
-          duration: 180, // in seconds
-          views: 50,
-          isPublished: true,
-          owner: req.user._id, // You can replace this with a valid ObjectId of a user
-        },
-      ];
+    
+    const {title, description} = req.body;
 
-      try{
-         await Video.insertMany(dummyVideos);
-         return res.status(200).json(
-            new ApiResponse(200,{},"Videos added")
-         )
-      }
-      catch(e)
+    if(!req.files?.video)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Please select a video to upload")
+        )
+    }
+
+    if(!req.files?.thumbnail)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Please select a thumbnail")
+        )
+    }
+
+    try{
+
+    const video = await uploadOnCloudinary(req.files?.video[0]?.path);
+
+    const thumbnail = await uploadOnCloudinary(req.files?.thumbnail[0]?.path)
+
+    const videoObject = {
+
+    videoFile: video.url,
+    thumbnail: thumbnail.url,
+    title: title,
+    description: description,
+    duration: video.duration, // in seconds
+    views: 0,
+    isPublished: true,
+    owner: req.user?._id,
+    }   
+
+    const uploadedVideoDetails = await Video.create(videoObject);
+
+    return res.status(200).json(
+        new ApiResponse(200, uploadedVideoDetails, "Video Uploaded")
+    )
+    }
+    catch(e)
       {
         return res.status(500).json(
             new ApiError(500,"Internal Server Error")
         )
-      }
+      }   
 }
 
 export {
@@ -668,5 +679,5 @@ export {
     getUserChannelProfile,
     subscribeToChannel,
     getWatchHistory,
-    testAddVideos
+    uploadVideo
 }

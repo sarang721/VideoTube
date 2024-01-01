@@ -11,7 +11,7 @@ import { registerUser,
     subscribeToChannel,
     getUserChannelProfile,
     getWatchHistory,
-    testAddVideos
+    uploadVideo
 } 
 from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -31,6 +31,15 @@ router.route('/update-coverImage').patch(verifyJWT,upload.single('coverImage'), 
 router.route('/channel-info/:userName').post(verifyJWT, getUserChannelProfile);
 router.route('/subscribe').post(verifyJWT, subscribeToChannel);
 router.route('/watch-history').get(verifyJWT, getWatchHistory);
-router.route('/add-video').post(verifyJWT, testAddVideos)
+router.route('/upload-video').post(verifyJWT, upload.fields([
+    {
+        name: "thumbnail",
+        maxCount:1
+    },
+    {
+        name: "video",
+        maxCount:1
+    }
+]), uploadVideo)
 
 export default router;
