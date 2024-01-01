@@ -15,10 +15,10 @@ const verifyJWT = async(req,res,next)=>{
         )   
     }
     
+    try{
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     // console.log(decodedToken);
         
-    try{
         const user = await User.findById(decodedToken?._id)
 
         // const user = await User.findOne({

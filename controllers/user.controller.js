@@ -2,8 +2,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { Subscription } from "../models/subscription.model.js"
+import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
 import jwt, { decode } from "jsonwebtoken";
+import mongoose from "mongoose";
 
 const registerUser=async(req,res)=>{
 
@@ -544,6 +546,115 @@ const subscribeToChannel = async(req,res)=>{
 }
 
 
+const getWatchHistory = async(req,res)=>{
+
+    try{
+
+    const userWatchHistory = await User.aggregate([
+        {
+            $match:{
+                _id: new mongoose.Types.ObjectId(req.user?._id),
+            }
+        },
+        {
+            $lookup:{
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline:[
+                    {
+                        $lookup:{
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "ownerDetails",
+                            pipeline:[
+                                {
+                                    $project:{
+                                        avatar:1,
+                                        userName:1,
+                                        email:1,
+                                        fullName:1,
+                                        coverImage:1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            $project:{
+                userName:1,
+                email:1,
+                avatar:1,
+                coverImage:1,
+                fullName:1,
+                watchHistory:1
+            }
+        }
+
+
+    ])
+
+    console.log(userWatchHistory)
+
+    return res.status(200).json(
+        new ApiResponse(200,userWatchHistory,"Watch history fetched")
+    )
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+
+}
+
+const testAddVideos = async(req,res)=>{
+    console.log("adding")
+
+    const dummyVideos = [
+        {
+          videoFile: "sample_video_1.mp4",
+          thumbnail: "thumbnail_1.jpg",
+          title: "Sample Video 1",
+          description: "This is the first sample video",
+          duration: 120, // in seconds
+          views: 100,
+          isPublished: true,
+          owner: req.user._id // You can replace this with a valid ObjectId of a user
+        },
+        {
+          videoFile: "sample_video_2.mp4",
+          thumbnail: "thumbnail_2.jpg",
+          title: "Sample Video 2",
+          description: "This is the second sample video",
+          duration: 180, // in seconds
+          views: 50,
+          isPublished: true,
+          owner: req.user._id, // You can replace this with a valid ObjectId of a user
+        },
+      ];
+
+      try{
+         await Video.insertMany(dummyVideos);
+         return res.status(200).json(
+            new ApiResponse(200,{},"Videos added")
+         )
+      }
+      catch(e)
+      {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+      }
+}
+
 export {
     registerUser, 
     loginUser,
@@ -555,5 +666,7 @@ export {
     updateUserAvatar,
     updateUserCoverImage,
     getUserChannelProfile,
-    subscribeToChannel
+    subscribeToChannel,
+    getWatchHistory,
+    testAddVideos
 }
