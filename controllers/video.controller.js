@@ -3,8 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
-const uploadVideo = async(req,res)=>{
-    
+const publishVideo = async(req,res)=>{
+
     const {title, description} = req.body;
 
     if(!req.files?.video)
@@ -33,7 +33,7 @@ const uploadVideo = async(req,res)=>{
     thumbnail: thumbnail.url,
     title: title,
     description: description,
-    duration: video.duration, // in seconds
+    duration: video.duration, 
     views: 0,
     isPublished: true,
     owner: req.user?._id,
@@ -53,6 +53,27 @@ const uploadVideo = async(req,res)=>{
       }   
 }
 
+const getVideoById = async(req,res)=>{
+
+    const {videoId} = req.params
+
+    try{
+        const videoObject = await Video.findOne({_id:videoId});
+        // console.log(videoObject);
+
+        return res.status(200).json(
+            new ApiResponse(200,videoObject,"Video fetched")
+        )
+    }
+    catch(e)
+    {
+        return res.status(401).json(
+            new ApiError(401,"Internal Server Error")
+        )
+    }
+}
+
 export {
-    uploadVideo
+    publishVideo,
+    getVideoById
 }
