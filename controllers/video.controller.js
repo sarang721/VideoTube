@@ -3,6 +3,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
 
+
+const getAllVideos = async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    //TODO: get all videos based on query, sort, pagination
+}
+
 const publishVideo = async(req,res)=>{
 
     const {title, description} = req.body;
@@ -28,7 +34,6 @@ const publishVideo = async(req,res)=>{
     const thumbnail = await uploadOnCloudinary(req.files?.thumbnail[0]?.path)
 
     const videoObject = {
-
     videoFile: video.url,
     thumbnail: thumbnail.url,
     title: title,
@@ -191,5 +196,6 @@ export {
     getVideoById,
     updateVideo,
     deleteVideo,
-    togglePublishStatus
+    togglePublishStatus,
+    getAllVideos
 }
