@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { upload } from "../middleware/multer.middleware.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { getSubscribedChannels,
+    getChannelSubscribers,
     toggleSubscription 
 } 
 from "../controllers/subscription.controller.js";
@@ -10,6 +10,7 @@ const router = Router();
 
 router
     .route("/c/:channelId")
-    .post(verifyJWT,toggleSubscription);
+    .post(verifyJWT,toggleSubscription)
+    .get(verifyJWT,getChannelSubscribers)
 
 export default router;
