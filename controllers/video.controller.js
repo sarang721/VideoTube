@@ -6,7 +6,11 @@ import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudina
 
 const getAllVideos = async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
+    
+    const videos = await Video.find({})
+            .sort(sort)
+            .skip(skip)
+            .limit(parseInt(limit));
 }
 
 const publishVideo = async(req,res)=>{

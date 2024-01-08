@@ -8,7 +8,6 @@ import { registerUser,
     updateAccountDetails, 
     updateUserAvatar, 
     updateUserCoverImage,
-    subscribeToChannel,
     getUserChannelProfile,
     getWatchHistory,
 } 
@@ -28,8 +27,6 @@ router.route('/update-user').patch(verifyJWT, updateAccountDetails);
 router.route('/update-avatar').patch(verifyJWT, upload.single('avatar'), updateUserAvatar);
 router.route('/update-coverImage').patch(verifyJWT,upload.single('coverImage'), updateUserCoverImage)
 router.route('/channel-info/:userName').post(verifyJWT, getUserChannelProfile);
-router.route('/subscribe').post(verifyJWT, subscribeToChannel);
 router.route('/watch-history').get(verifyJWT, getWatchHistory);
-
 
 export default router

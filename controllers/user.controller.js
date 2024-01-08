@@ -522,30 +522,6 @@ const getUserChannelProfile = async(req,res)=>{
 
 }
 
-const subscribeToChannel = async(req,res)=>{
-
-    const { channelId } = req.body;
-
-    try{
-
-        const subscription = await Subscription.create({
-            subscriber: req.user._id,
-            channel: channelId
-        })
-
-        return res.status(200).json(
-            new ApiResponse(200,subscription,"Subscribed successfully")
-        )
-    }
-    catch(e)
-    {
-        return res.status(500).json(
-            new ApiError(500,"Internal Server Error")
-        )
-    }
-}
-
-
 const getWatchHistory = async(req,res)=>{
 
     try{
@@ -626,6 +602,5 @@ export {
     updateUserAvatar,
     updateUserCoverImage,
     getUserChannelProfile,
-    subscribeToChannel,
     getWatchHistory
 }
