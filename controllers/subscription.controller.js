@@ -61,7 +61,7 @@ const getChannelSubscribers = async(req,res)=>{
                     as:'subscribers',
                     pipeline:[
                         {
-                            $lookup:{
+                            $lookup:{  // writing project outside lookup  wont work
                                 from:'users',
                                 localField:'subscriber',
                                 foreignField:'_id',
