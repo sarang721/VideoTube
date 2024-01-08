@@ -112,8 +112,9 @@ const getChannelSubscribers = async(req,res)=>{
 
 }
 
-
 const getSubscribedChannels = async(req,res)=>{
+
+    
 
 
 }
