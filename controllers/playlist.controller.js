@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 const createPlaylist = async(req,res)=>{
     
     const { name, description} = req.body;
-
     if(name.length<=0)
     {
         return res.status(401).json(
