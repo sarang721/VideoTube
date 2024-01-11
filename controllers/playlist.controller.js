@@ -24,7 +24,7 @@ const createPlaylist = async(req,res)=>{
 
     try{
 
-        const alreadyExists = await Playlist.findOne({name:name});
+        const alreadyExists = await Playlist.findOne({name:name,owner:req.user._id});
         if(alreadyExists)
         {
             return res.status(401).json(
@@ -103,26 +103,23 @@ const addVideoToPlaylist = async(req,res)=>{
 
     try{
 
-        const playlist = await Playlist.findById(playlistId);
-        if(!playlist)
+        const existingPlaylist = await Playlist.findOne({
+            _id: playlistId,
+            owner: req.user._id
+        })
+
+        if(!existingPlaylist)
         {
             return res.status(404).json(
-                new ApiError(404,"No such playlist")
-            )
-        }
-
-        if(playlist.owner.toString()!==req.user._id.toString())
-        {
-            return res.status(401).json(
-                new ApiError(401,"UnAuthorized")
+                new ApiError(404,"No such Playlist found or Unauthorized")
             )
         }
         
-        playlist.videos.push(new mongoose.Types.ObjectId(videoId));
-        const updatedPlaylist = await playlist.save();
+        existingPlaylist.videos.push(new mongoose.Types.ObjectId(videoId));
+        await existingPlaylist.save();
 
         return res.status(200).json(
-            new ApiResponse(200,updatedPlaylist,"Video Added to playlist")
+            new ApiResponse(200,existingPlaylist,"Video Added to playlist")
         )
     }
     catch(e)
@@ -138,23 +135,26 @@ const addVideoToPlaylist = async(req,res)=>{
 const removeVideoFromPlaylist = async(req,res)=>{
     const { playlistId, videoId} = req.params;
     try{
+        const existingPlaylist = await Playlist.findOne({
+            _id: playlistId,
+            owner: req.user._id
+        })
 
-        const playlist = await Playlist.findById(playlistId);
-        if(!playlist)
+        if(!existingPlaylist)
         {
             return res.status(404).json(
-                new ApiError(404,"No such playlist")
+                new ApiError(404,"No such Playlist found or Unauthorized")
             )
-        }   
+        }
 
-        playlist.videos = playlist.videos.filter((video)=>{
+        existingPlaylist.videos = existingPlaylist.videos.filter((video)=>{
                 return video.toString()!=videoId
         })
 
-        await playlist.save();
+        await existingPlaylist.save();
 
         return res.status(200).json(
-            new ApiResponse(200,playlist,"Video removed")
+            new ApiResponse(200,existingPlaylist,"Video removed")
         )
 
     }
@@ -166,11 +166,97 @@ const removeVideoFromPlaylist = async(req,res)=>{
     }
 }
 
+const deletePlaylist = async(req,res)=>{
+
+    const {playlistId} = req.params;
+
+    try{
+
+        const existingPlaylist = await Playlist.findOne({
+            _id: playlistId,
+            owner: req.user._id
+        })
+
+        if(!existingPlaylist)
+        {
+            return res.status(404).json(
+                new ApiError(404,"No such Playlist found or Unauthorized")
+            )
+        }
+        
+        await Playlist.deleteOne({_id:playlistId});
+
+        return res.status(200).json(
+            new ApiResponse(200,{},"Playlist deleted")
+        )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200,{},"Playlist deleted")
+    )
+
+}
+
+const updatePlaylist = async(req,res)=>{
+
+    const {playlistId} = req.params;
+
+    const {name, description} = req.body;
+
+    try{
+
+
+        const existingPlaylist = await Playlist.findOne({
+            _id: playlistId,
+            owner: req.user._id
+        })
+
+        if(!existingPlaylist)
+        {
+            return res.status(404).json(
+                new ApiError(404,"No such Playlist found or Unauthorized")
+            )
+        }
+
+        const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId,{
+            $set:{
+                name: name,
+                description: description
+            }
+        },
+        {
+            new: true,
+        }
+        )
+        return res.status(200).json(
+            new ApiResponse(200,updatedPlaylist,"Playlist Updated")
+        )
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+
+}
+
+
+
 export {
     createPlaylist,
     getUserPlaylists,
     addVideoToPlaylist,
-    removeVideoFromPlaylist
+    removeVideoFromPlaylist,
+    deletePlaylist,
+    updatePlaylist
 }
 
 
