@@ -2,6 +2,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Playlist } from "../models/playlist.models.js";
 import { User } from "../models/user.model.js";
+import mongoose from "mongoose";
 
 const createPlaylist = async(req,res)=>{
     
@@ -98,16 +99,78 @@ const getUserPlaylists = async(req,res)=>{
 
 const addVideoToPlaylist = async(req,res)=>{
 
-    const {playlistId, videoId} = req.params;
+    const { playlistId, videoId} = req.params;
+
+    try{
+
+        const playlist = await Playlist.findById(playlistId);
+        if(!playlist)
+        {
+            return res.status(404).json(
+                new ApiError(404,"No such playlist")
+            )
+        }
+
+        if(playlist.owner.toString()!==req.user._id.toString())
+        {
+            return res.status(401).json(
+                new ApiError(401,"UnAuthorized")
+            )
+        }
+        
+        playlist.videos.push(new mongoose.Types.ObjectId(videoId));
+        const updatedPlaylist = await playlist.save();
+
+        return res.status(200).json(
+            new ApiResponse(200,updatedPlaylist,"Video Added to playlist")
+        )
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
 
 
+}
 
+const removeVideoFromPlaylist = async(req,res)=>{
+    const { playlistId, videoId} = req.params;
+    try{
+
+        const playlist = await Playlist.findById(playlistId);
+        if(!playlist)
+        {
+            return res.status(404).json(
+                new ApiError(404,"No such playlist")
+            )
+        }   
+
+        playlist.videos = playlist.videos.filter((video)=>{
+                return video.toString()!=videoId
+        })
+
+        await playlist.save();
+
+        return res.status(200).json(
+            new ApiResponse(200,playlist,"Video removed")
+        )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
 }
 
 export {
     createPlaylist,
     getUserPlaylists,
-    addVideoToPlaylist
+    addVideoToPlaylist,
+    removeVideoFromPlaylist
 }
 
 

@@ -199,9 +199,6 @@ const refreshAccessToken = async(req,res)=>{
     try{
 
     const user = await User.findById(decodedToken._id);
-
-    console.log(user)
-
     if(!user)
     {
         return res.status(401).json(
