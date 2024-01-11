@@ -10,7 +10,7 @@ const createPlaylist = async(req,res)=>{
     if(name.length<=0)
     {
         return res.status(401).json(
-            new ApiError(401,"Name is required")
+            new ApiError(401,"Name is required field")
         )
     }
 
