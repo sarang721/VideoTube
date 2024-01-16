@@ -119,10 +119,19 @@ const addVideoToPlaylist = async(req,res)=>{
         if(!existingPlaylist)
         {
             return res.status(404).json(
-                new ApiError(404,"No such Playlist found or Unauthorized")
+                new ApiError(404,"No such Playlist found or Unauthorized access to playlist")
             )
         }
         
+        existingPlaylist.videos.map((video)=>{
+            if(video._id.toString() === videoId)
+            {
+                return res.status(400).json(
+                    new ApiError(400,"Video already exists")
+                )
+            }
+        })
+
         existingPlaylist.videos.push(new mongoose.Types.ObjectId(videoId));
         await existingPlaylist.save();
 
@@ -167,7 +176,7 @@ const removeVideoFromPlaylist = async(req,res)=>{
         if(!existingPlaylist)
         {
             return res.status(404).json(
-                new ApiError(404,"No such Playlist found or Unauthorized")
+                new ApiError(404,"No such Playlist found or Unauthorized access to Playlist")
             )
         }
 
