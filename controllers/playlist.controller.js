@@ -269,7 +269,10 @@ const getPlaylistById = async(req,res)=>{
         )
     }
 
-    const playlist = await Playlist.findById(playlistId);
+    const playlist = await Playlist.findOne({
+        _id:playlistId,
+        owner: req.user._id
+    });
     if(!playlist)
     {
         return res.status(404).json(
