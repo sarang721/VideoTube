@@ -102,6 +102,13 @@ const addVideoToPlaylist = async(req,res)=>{
 
     const { playlistId, videoId} = req.params;
 
+    if(!isValidObjectId(playlistId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid playlistId")
+        )
+    }
+
     try{
 
         const existingPlaylist = await Playlist.findOne({
@@ -134,7 +141,23 @@ const addVideoToPlaylist = async(req,res)=>{
 }
 
 const removeVideoFromPlaylist = async(req,res)=>{
+
     const { playlistId, videoId} = req.params;
+
+    if(!isValidObjectId(playlistId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid playlistId")
+        )
+    }
+
+    if(!isValidObjectId(videoId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid videoId")
+        )
+    }
+
     try{
         const existingPlaylist = await Playlist.findOne({
             _id: playlistId,
@@ -180,6 +203,13 @@ const deletePlaylist = async(req,res)=>{
 
     const {playlistId} = req.params;
 
+    if(!isValidObjectId(playlistId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid playlistId")
+        )
+    }
+
     try{
 
         const existingPlaylist = await Playlist.findOne({
@@ -217,6 +247,13 @@ const deletePlaylist = async(req,res)=>{
 const updatePlaylist = async(req,res)=>{
 
     const {playlistId} = req.params;
+
+    if(!isValidObjectId(playlistId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid playlistId")
+        )
+    }
 
     const {name, description} = req.body;
 
