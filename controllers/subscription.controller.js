@@ -107,16 +107,53 @@ const getChannelSubscribers = async(req,res)=>{
         )
     }
 
-
-
-
 }
 
 const getSubscribedChannels = async(req,res)=>{
 
-    
+    const { subscriberId } = req.params;
 
+    try{
+    const channels = await Subscription.aggregate([
+        {
+            $match:{
+                subscriber: new mongoose.Types.ObjectId(subscriberId)
+            }
+        },
+        {
+            $lookup:{
+                from: 'users',
+                localField: 'channel',
+                foreignField: '_id',
+                as: 'subscribedChannelInfo',
+                pipeline:[
+                    {
+                        $project:{
+                            _id:1,
+                            userName:1,
+                            email:1,
+                            fullName:1,
+                            avatar:1,
+                            coverImage:1
+                        }
+                    }
+                ]
+            }
+        },
+        
+    ])
 
+    return res.status(200).json(
+        new ApiResponse(200,channels,"Channels fetched")
+    )
+
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
 }
 
 export {

@@ -2,6 +2,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Playlist } from "../models/playlist.models.js";
 import { User } from "../models/user.model.js";
+import {Video} from '../models/video.model.js'
+import { isValidObjectId } from '../utils/checkValidObjectId.js'
 import mongoose from "mongoose";
 
 const createPlaylist = async(req,res)=>{
@@ -146,6 +148,15 @@ const removeVideoFromPlaylist = async(req,res)=>{
             )
         }
 
+        const video = await Video.findById(videoId);
+    
+        if(!video)
+        {
+            return res.status(404).json(
+                new ApiError(404,"No such video found")
+            )
+        }
+
         existingPlaylist.videos = existingPlaylist.videos.filter((video)=>{
                 return video.toString()!=videoId
         })
@@ -247,15 +258,88 @@ const updatePlaylist = async(req,res)=>{
 
 }
 
+const getPlaylistById = async(req,res)=>{
 
+    const { playlistId } = req.params;
+
+    if(!isValidObjectId(playlistId))
+    {
+        return res.status(400).json(
+            new ApiError(400,"Invalid playlistId")
+        )
+    }
+
+    const playlist = await Playlist.findById(playlistId);
+    if(!playlist)
+    {
+        return res.status(404).json(
+            new ApiError(404,"No Playlist found")
+        )
+    }
+
+    try{
+
+        const playlist = await Playlist.aggregate([
+            {   
+                $match:{
+                    _id: new mongoose.Types.ObjectId(playlistId)
+                }
+            },
+            {
+               $lookup:{
+                    from: 'videos',
+                    localField: 'videos',
+                    foreignField:'_id',
+                    as:'videoInfo',
+                    pipeline:[
+                        {
+                            $lookup:{
+                                from:'users',
+                                localField:'owner',
+                                foreignField:'_id',
+                                as:'ownerInfo',
+                                pipeline:[
+                                    {
+                                        $project:{
+                                            _id:1,
+                                            userName:1,
+                                            fullName:1,
+                                            email:1,
+                                            avatar:1,
+                                            coverImage:1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+               }
+            }
+
+        ])
+
+        return res.status(200).json(
+            new ApiResponse(200,playlist,"Playlist fetched")
+        )
+    }
+    catch(e)
+    {
+        return res.status(500).json(
+            new ApiError(500,"Internal Server Error")
+        )
+    }
+    
+    
+}
 
 export {
-    createPlaylist,
-    getUserPlaylists,
-    addVideoToPlaylist,
-    removeVideoFromPlaylist,
-    deletePlaylist,
-    updatePlaylist
+    createPlaylist, //
+    getUserPlaylists, //
+    addVideoToPlaylist, //
+    removeVideoFromPlaylist, //
+    deletePlaylist, //
+    updatePlaylist, //
+    getPlaylistById
 }
 
 
