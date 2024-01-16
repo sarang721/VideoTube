@@ -247,10 +247,6 @@ const deletePlaylist = async(req,res)=>{
         )
     }
 
-    return res.status(200).json(
-        new ApiResponse(200,{},"Playlist deleted")
-    )
-
 }
 
 const updatePlaylist = async(req,res)=>{
