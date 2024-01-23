@@ -1,7 +1,7 @@
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.model.js";
-import { uploadOnCloudinary, deleteImageFromCloudinary } from "../utils/cloudinary.js";
+import { cloudinaryUtils } from "../utils/cloudinary.js";
 
 
 const getAllVideos = async (req, res) => {
@@ -33,9 +33,9 @@ const publishVideo = async(req,res)=>{
 
     try{
 
-    const video = await uploadOnCloudinary(req.files?.video[0]?.path);
+    const video = await cloudinaryUtils.uploadOnCloudinary(req.files?.video[0]?.path);
 
-    const thumbnail = await uploadOnCloudinary(req.files?.thumbnail[0]?.path)
+    const thumbnail = await cloudinaryUtils.uploadOnCloudinary(req.files?.thumbnail[0]?.path)
 
     const videoObject = {
     videoFile: video.url,
@@ -124,8 +124,8 @@ const updateVideo = async (req, res) => {
 
     if(req.file)
     {
-        await deleteImageFromCloudinary(videoObject?.thumbnail)
-        const thumbnail = await uploadOnCloudinary(req.file?.path);
+        await cloudinaryUtils.deleteImageFromCloudinary(videoObject?.thumbnail)
+        const thumbnail = await cloudinaryUtils.uploadOnCloudinary(req.file?.path);
         videoObject.thumbnail = thumbnail?.url
     }
 

@@ -1,7 +1,10 @@
 import {v2 as cloudinary} from "cloudinary"
 import fs from "fs"
 
-const uploadOnCloudinary = async (localFilePath) => {
+
+const cloudinaryUtils = {
+
+    uploadOnCloudinary : async (localFilePath) => {
 
     cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -24,9 +27,9 @@ const uploadOnCloudinary = async (localFilePath) => {
         fs.unlinkSync(localFilePath) // remove the locally saved temporary file as the upload operation got failed
         return null;
     }
-}
+},
 
-const deleteImageFromCloudinary = async(url)=>{
+    deleteImageFromCloudinary : async(url)=>{
 
     cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -50,7 +53,8 @@ const deleteImageFromCloudinary = async(url)=>{
 
 }
 
-export {uploadOnCloudinary,
-    deleteImageFromCloudinary
+}
 
+export {
+    cloudinaryUtils
 }

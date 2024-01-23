@@ -1,0 +1,22 @@
+sinon.stub() and sinon.spy() are functions provided by Sinon.js.
+sinon.stub():
+Purpose: The primary purpose of stub is to replace a function or method with a Sinon stub.
+Stubs are like spies, but they also have the ability to override the behavior of the 
+original function or method.
+
+Behavior: When you create a stub using sinon.stub(), you can define how the stub should 
+behave when called, specify return values, and even replace the implementation of the 
+original function. This makes it useful for controlling the behavior of dependencies 
+during testing.
+
+
+
+sinon.spy():
+Purpose: The primary purpose of spy is to observe a function or method, tracking 
+information about its calls (such as the number of times it was called, arguments, etc.), 
+without affecting its behavior.
+
+Behavior: When you create a spy using sinon.spy(), the original function or method is not 
+replaced or modified. Instead, the spy wraps around the original function and allows you to 
+observe its behavior.
+
